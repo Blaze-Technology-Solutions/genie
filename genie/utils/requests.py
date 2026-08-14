@@ -17,10 +17,55 @@ def make_request(
 		req_type, url, json=payload, headers=headers
 	)
 	log_request(url, payload, response.json() if response.status_code == 200 else response.text)
-	response.raise_for_status()
+	try:
+		response.raise_for_status()
+	except requests.HTTPError:
+		# raise_for_status() discards the body, so the remote site's actual error
+		# (e.g. a frappe.throw surfacing as a bare 417) never reaches the caller.
+		frappe.log_error(f"{url}\n\n{response.text}", "Genie request failed")
+		frappe.throw(
+			remote_error_message(response),
+			title=f"Request failed ({response.status_code})"
+		)
+
 	if return_response:
 		return response
 	return response.json()
+
+
+def remote_error_message(response):
+	"""Best-effort extraction of a readable error out of a Frappe error response."""
+	try:
+		data = response.json()
+	except ValueError:
+		return response.text[:2000] or response.reason
+
+	messages = data.get("_server_messages")
+	if messages:
+		try:
+			parsed = frappe.parse_json(messages)
+		except Exception:
+			parsed = None
+
+		if parsed:
+			return "<br>".join(unwrap_server_message(m) for m in parsed)
+
+		return str(messages)[:2000]
+
+	return str(data.get("exception") or data.get("message") or data)[:2000]
+
+
+def unwrap_server_message(message):
+	"""A _server_messages entry is a JSON string wrapping {"message": "..."}."""
+	try:
+		parsed = frappe.parse_json(message)
+	except Exception:
+		return str(message)
+
+	if isinstance(parsed, dict):
+		return str(parsed.get("message") or message)
+
+	return str(parsed)
 
 
 def log_request(endpoint, payload, output):
