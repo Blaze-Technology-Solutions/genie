@@ -6,6 +6,7 @@
  "field_order": [
   "title",
   "user",
+  "email",
   "column_break_mxda",
   "status",
   "whatsapp_number",
@@ -26,6 +27,13 @@
    "fieldname": "user",
    "fieldtype": "Data",
    "label": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
    "read_only": 1
   },
   {
@@ -74,7 +82,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-24 12:03:43.782623",
+ "modified": "2026-09-30 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Genie",
  "name": "Support Ticket",
