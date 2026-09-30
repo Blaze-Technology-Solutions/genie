@@ -41,7 +41,7 @@ genie.SupportTicket = class SupportTicket {
 					label: __("Email"),
 					fieldtype: "Read Only",
 					reqd: 1,
-					default: frappe.session.user_email,
+					default: frappe.session.user_email || frappe.boot.user.email,
 					
 				},
 				{

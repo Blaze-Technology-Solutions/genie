@@ -10,6 +10,8 @@ from genie.utils.requests import make_request
 @frappe.whitelist()
 def create_ticket(title, description, status, email, user, whatsapp_no=None, screen_recording=None):
 	settings = frappe.get_cached_doc("Genie Settings")
+	# Always attribute the ticket to the logged-in user, not whatever the client sent.
+	email = frappe.db.get_value("User", frappe.session.user, "email") or email
 	headers = {
 		"Authorization": f"token {settings.get_password('support_api_token')}",
 	}
